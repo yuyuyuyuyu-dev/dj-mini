@@ -24,7 +24,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.yuyuyuyuyu.djmini.R
 import dev.yuyuyuyuyu.djmini.data.DefaultDataRepository
-import dev.yuyuyuyuyu.djmini.ui.theme.DJMiniTheme
+import dev.yuyuyuyuyu.mycomposables.MyMaterialDynamicTheme
 
 @Composable
 fun MainScreen(
@@ -102,5 +102,5 @@ fun Greeting(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun MainScreenPreview() {
-    DJMiniTheme { MainScreen(listOf("Android")) }
+    MyMaterialDynamicTheme { MainScreen(listOf("Android")) }
 }

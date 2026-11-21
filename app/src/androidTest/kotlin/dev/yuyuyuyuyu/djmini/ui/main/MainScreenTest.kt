@@ -1,7 +1,7 @@
 package dev.yuyuyuyuyu.djmini.ui.main
 
 import androidx.activity.ComponentActivity
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import org.junit.Before
 import org.junit.Rule

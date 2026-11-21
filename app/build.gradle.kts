@@ -16,7 +16,12 @@ ktlint {
 
 android {
     namespace = "dev.yuyuyuyuyu.djmini"
-    compileSdk = 37
+    compileSdk {
+        version =
+            release(37) {
+                minorApiLevel = 2
+            }
+    }
     defaultConfig {
         applicationId = "dev.yuyuyuyuyu.djmini"
         minSdk = 24

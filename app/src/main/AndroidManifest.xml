@@ -23,6 +23,8 @@
             </intent-filter>
         </activity>
 
+        <!-- Controllers in other apps, such as System UI and Bluetooth, connect without any permission.
+             Who may connect is decided in MediaSession.Callback.onConnect. -->
         <service
             android:name=".playback.PlaybackService"
             android:exported="true"

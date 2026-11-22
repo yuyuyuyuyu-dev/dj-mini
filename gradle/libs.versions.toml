@@ -13,8 +13,8 @@ androidxTestRunner = "1.7.0"
 coroutines = "1.11.0"
 detekt = "2.0.0-alpha.6"
 junit = "4.13.2"
-ksp = "2.3.14"
 kotlin = "2.4.21"
+ksp = "2.3.14"
 ktlint = "14.2.0"
 ktlintCli = "1.8.0"
 lifecycleViewmodelNav3 = "2.11.1"
@@ -58,7 +58,7 @@ yuyuyuyuyu-mycomposables = { module = "dev.yuyuyuyuyu:my-composables", version.r
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 detekt = { id = "dev.detekt", version.ref = "detekt" }
-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 versionCatalogUpdate = { id = "nl.littlerobots.version-catalog-update", version.ref = "versionCatalogUpdate" }

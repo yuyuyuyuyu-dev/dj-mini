@@ -12,7 +12,7 @@ class MainScreenTest {
 
     @Before
     fun setup() {
-        composeTestRule.setContent { MainScreen(FAKE_DATA) }
+        composeTestRule.setContent { MainScreen(FAKE_DATA, MusicAccess.Granted, {}) }
     }
 
     @Test

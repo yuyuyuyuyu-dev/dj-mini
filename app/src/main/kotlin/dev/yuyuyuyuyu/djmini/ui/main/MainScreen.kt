@@ -43,7 +43,13 @@ fun MainScreen(
         }
 
         is MainScreenUiState.Success -> {
-            MainScreen(data = state.data, modifier = modifier)
+            val musicAccess = rememberMusicAccess()
+            MainScreen(
+                data = state.data,
+                musicAccess = musicAccess.state,
+                onRequestMusicAccess = musicAccess.request,
+                modifier = modifier,
+            )
         }
 
         is MainScreenUiState.Error -> {
@@ -56,6 +62,8 @@ fun MainScreen(
 @Composable
 internal fun MainScreen(
     data: List<String>,
+    musicAccess: MusicAccess,
+    onRequestMusicAccess: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -77,11 +85,29 @@ internal fun MainScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             data.forEach { Greeting(it) }
-            Button(
-                modifier = Modifier.padding(24.dp, 24.dp),
-                onClick = {},
-            ) {
-                Text("OK")
+            when (musicAccess) {
+                MusicAccess.Granted -> {
+                    Text(
+                        text = stringResource(R.string.music_access_granted),
+                        modifier = Modifier.padding(24.dp, 24.dp),
+                    )
+                }
+
+                MusicAccess.NotGranted -> {
+                    Button(
+                        modifier = Modifier.padding(24.dp, 24.dp),
+                        onClick = onRequestMusicAccess,
+                    ) {
+                        Text(stringResource(R.string.music_access_request))
+                    }
+                }
+
+                MusicAccess.Unsupported -> {
+                    Text(
+                        text = stringResource(R.string.music_access_unsupported),
+                        modifier = Modifier.padding(24.dp, 24.dp),
+                    )
+                }
             }
         }
     }
@@ -102,5 +128,5 @@ fun Greeting(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun MainScreenPreview() {
-    MyMaterialDynamicTheme { MainScreen(listOf("Android")) }
+    MyMaterialDynamicTheme { MainScreen(listOf("Android"), MusicAccess.NotGranted, {}) }
 }

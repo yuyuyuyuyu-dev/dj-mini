@@ -3,5 +3,6 @@
     <string name="app_functions_display_description">Play a song saved on this device</string>
     <string name="music_access_request">Allow access to music</string>
     <string name="music_access_granted">Ask Gemini to play a song on DJ Mini.</string>
-    <string name="music_access_unsupported">Playing music from Gemini needs Android 16 or later.</string>
+    <string name="gemini_availability_checking">Checking whether Gemini can use DJ Mini…</string>
+    <string name="gemini_availability_unavailable">Gemini can\'t use DJ Mini on this device. DJ Mini plays music through AppFunctions, and this device doesn\'t support them.</string>
 </resources>

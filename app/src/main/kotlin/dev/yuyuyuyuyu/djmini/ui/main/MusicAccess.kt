@@ -2,7 +2,6 @@ package dev.yuyuyuyuyu.djmini.ui.main
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -16,7 +15,6 @@ import androidx.core.content.ContextCompat
 internal enum class MusicAccess {
     Granted,
     NotGranted,
-    Unsupported,
 }
 
 internal class MusicAccessHolder(
@@ -26,10 +24,6 @@ internal class MusicAccessHolder(
 
 @Composable
 internal fun rememberMusicAccess(): MusicAccessHolder {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.BAKLAVA) {
-        return MusicAccessHolder(MusicAccess.Unsupported) {}
-    }
-
     val context = LocalContext.current
     var granted by remember {
         mutableStateOf(

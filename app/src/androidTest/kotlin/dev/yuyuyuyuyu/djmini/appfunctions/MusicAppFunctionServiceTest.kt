@@ -16,7 +16,6 @@ import androidx.appfunctions.ExecuteAppFunctionResponse
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import dev.yuyuyuyuyu.djmini.playback.PlaybackService
@@ -39,7 +38,6 @@ import java.util.UUID
 import kotlin.time.Duration.Companion.seconds
 
 @RunWith(AndroidJUnit4::class)
-@SdkSuppress(minSdkVersion = 36)
 class MusicAppFunctionServiceTest {
     @get:Rule
     val grantPermissionRule: GrantPermissionRule = GrantPermissionRule.grant(Manifest.permission.READ_MEDIA_AUDIO)

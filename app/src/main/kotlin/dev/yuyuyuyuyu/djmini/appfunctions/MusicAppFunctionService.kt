@@ -2,8 +2,6 @@ package dev.yuyuyuyuyu.djmini.appfunctions
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.appfunctions.AppFunctionDeclaration
 import androidx.appfunctions.AppFunctionElementNotFoundException
 import androidx.appfunctions.AppFunctionInvalidArgumentException
@@ -17,7 +15,6 @@ import dev.yuyuyuyuyu.djmini.music.Song
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-@RequiresApi(Build.VERSION_CODES.BAKLAVA)
 @AppFunctionServiceEntryPoint(
     serviceName = "MusicAppFunctionService",
     appFunctionXmlFileName = "music_app_function_service",

@@ -1,26 +1,32 @@
 [versions]
 androidGradlePlugin = "9.5.2"
 androidxActivity = "1.13.0"
+androidxAppfunctions = "1.0.0"
 androidxComposeBom = "2026.11.01"
 androidxCore = "1.19.1"
 androidxLifecycle = "2.11.1"
 androidxTest = "1.7.0"
 androidxTestEspresso = "3.7.0"
 androidxTestExt = "1.3.0"
+androidxTestRules = "1.7.0"
 androidxTestRunner = "1.7.0"
 coroutines = "1.11.0"
 detekt = "2.0.0-alpha.6"
 junit = "4.13.2"
 kotlin = "2.4.21"
+ksp = "2.3.14"
 ktlint = "14.2.0"
 ktlintCli = "1.8.0"
 lifecycleViewmodelNav3 = "2.11.1"
+media3 = "1.11.1"
 myComposables = "0.1.2"
 nav3Core = "1.2.2"
 versionCatalogUpdate = "1.1.2"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivity" }
+androidx-appfunctions = { module = "androidx.appfunctions:appfunctions", version.ref = "androidxAppfunctions" }
+androidx-appfunctions-compiler = { module = "androidx.appfunctions:appfunctions-compiler", version.ref = "androidxAppfunctions" }
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "androidxComposeBom" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
 androidx-compose-ui = { module = "androidx.compose.ui:ui" }
@@ -33,13 +39,17 @@ androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-ru
 androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "androidxLifecycle" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
 androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycleViewmodelNav3" }
+androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3" }
+androidx-media3-session = { module = "androidx.media3:media3-session", version.ref = "media3" }
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "nav3Core" }
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "nav3Core" }
 androidx-test-core = { module = "androidx.test:core", version.ref = "androidxTest" }
 androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidxTestEspresso" }
 androidx-test-ext-junit = { module = "androidx.test.ext:junit", version.ref = "androidxTestExt" }
+androidx-test-rules = { module = "androidx.test:rules", version.ref = "androidxTestRules" }
 androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidxTestRunner" }
 junit = { module = "junit:junit", version.ref = "junit" }
+kotlinx-coroutines-guava = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-guava", version.ref = "coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 ktlint-cli = { module = "com.pinterest.ktlint:ktlint-cli", version.ref = "ktlintCli" }
 yuyuyuyuyu-mycomposables = { module = "dev.yuyuyuyuyu:my-composables", version.ref = "myComposables" }
@@ -49,5 +59,6 @@ android-application = { id = "com.android.application", version.ref = "androidGr
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 detekt = { id = "dev.detekt", version.ref = "detekt" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 versionCatalogUpdate = { id = "nl.littlerobots.version-catalog-update", version.ref = "versionCatalogUpdate" }

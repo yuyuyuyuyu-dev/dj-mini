@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AppFunctionAppMetadata xmlns:appfn="http://schemas.android.com/apk/androidx.appfunctions"
+    appfn:instructions="DJ Mini plays music files saved on this device. Its function plays one song that matches a title, an artist, or an album.
+    Constraints:
+    - Only music files saved on this device can be played; streaming services are not available.
+    - One call plays one song, and playback stops when that song ends."
+    appfn:displayDescription="@string/app_functions_display_description" />

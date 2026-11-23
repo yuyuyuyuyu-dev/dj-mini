@@ -3,8 +3,10 @@ package dev.yuyuyuyuyu.djmini.ui.main
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
@@ -43,7 +45,15 @@ fun MainScreen(
         }
 
         is MainScreenUiState.Success -> {
-            MainScreen(data = state.data, modifier = modifier)
+            val geminiAvailability = rememberGeminiAvailability()
+            val musicAccess = rememberMusicAccess()
+            MainScreen(
+                data = state.data,
+                geminiAvailability = geminiAvailability,
+                musicAccess = musicAccess.state,
+                onRequestMusicAccess = musicAccess.request,
+                modifier = modifier,
+            )
         }
 
         is MainScreenUiState.Error -> {
@@ -56,6 +66,9 @@ fun MainScreen(
 @Composable
 internal fun MainScreen(
     data: List<String>,
+    geminiAvailability: GeminiAvailability,
+    musicAccess: MusicAccess,
+    onRequestMusicAccess: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -77,11 +90,53 @@ internal fun MainScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             data.forEach { Greeting(it) }
+            when (geminiAvailability) {
+                GeminiAvailability.Checking -> {
+                    Row(
+                        modifier = Modifier.padding(24.dp, 24.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                        Text(stringResource(R.string.gemini_availability_checking))
+                    }
+                }
+
+                GeminiAvailability.Available -> {
+                    MusicAccessSection(musicAccess, onRequestMusicAccess)
+                }
+
+                GeminiAvailability.Unavailable -> {
+                    Text(
+                        text = stringResource(R.string.gemini_availability_unavailable),
+                        modifier = Modifier.padding(24.dp, 24.dp),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MusicAccessSection(
+    musicAccess: MusicAccess,
+    onRequestMusicAccess: () -> Unit,
+) {
+    when (musicAccess) {
+        MusicAccess.Granted -> {
+            Text(
+                text = stringResource(R.string.music_access_granted),
+                modifier = Modifier.padding(24.dp, 24.dp),
+            )
+        }
+
+        MusicAccess.NotGranted -> {
             Button(
                 modifier = Modifier.padding(24.dp, 24.dp),
-                onClick = {},
+                onClick = onRequestMusicAccess,
             ) {
-                Text("OK")
+                Text(stringResource(R.string.music_access_request))
             }
         }
     }
@@ -102,5 +157,5 @@ fun Greeting(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun MainScreenPreview() {
-    MyMaterialDynamicTheme { MainScreen(listOf("Android")) }
+    MyMaterialDynamicTheme { MainScreen(listOf("Android"), GeminiAvailability.Available, MusicAccess.NotGranted, {}) }
 }

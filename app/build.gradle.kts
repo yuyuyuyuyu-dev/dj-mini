@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.androidx.room)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
@@ -13,6 +14,10 @@ detekt {
 
 ktlint {
     version = libs.versions.ktlintCli.get()
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 android {
@@ -95,6 +100,14 @@ dependencies {
     implementation(libs.kotlinx.coroutines.guava)
 
     androidTestImplementation(libs.androidx.test.rules)
+
+    implementation(libs.google.play.services.litert)
+    implementation(libs.kotlinx.coroutines.play.services)
+
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+
+    implementation(libs.androidx.work.runtime)
 
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.navigation3.runtime)

@@ -5,12 +5,14 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import dev.yuyuyuyuyu.djmini.similar.SongIndexWorker
 
 internal enum class MusicAccess {
     Granted,
@@ -31,6 +33,9 @@ internal fun rememberMusicAccess(): MusicAccessHolder {
         )
     }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted = it }
+    LaunchedEffect(granted) {
+        if (granted) SongIndexWorker.enqueue(context)
+    }
 
     return MusicAccessHolder(if (granted) MusicAccess.Granted else MusicAccess.NotGranted) {
         launcher.launch(Manifest.permission.READ_MEDIA_AUDIO)

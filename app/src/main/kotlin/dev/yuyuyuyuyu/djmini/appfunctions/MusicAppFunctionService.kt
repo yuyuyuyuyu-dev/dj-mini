@@ -21,8 +21,8 @@ import kotlinx.coroutines.withContext
 )
 abstract class BaseMusicAppFunctionService : AppFunctionService() {
     /**
-     * Plays one song from the music files saved on this device, and then keeps playing the songs on this device that sound
-     * most like the song before, without playing any song twice.
+     * Plays one song from the music files saved on this device, and then keeps playing songs on this device, each picked at
+     * random from the three that sound most like the song before, without playing any song twice.
      *
      * Matching is case-insensitive and accepts partial text. When several songs match, the song whose title is exactly the
      * given title is played; otherwise the first match in title order is played.

@@ -3,5 +3,5 @@
     appfn:instructions="DJ Mini plays music files saved on this device. Its function plays one song that matches a title, an artist, or an album, and then keeps playing songs that sound like it.
     Constraints:
     - Only music files saved on this device can be played; streaming services are not available.
-    - One call starts one song; after it, DJ Mini picks each next song by how much it sounds like the song before, and never plays a song twice until the next call."
+    - One call starts one song; after it, DJ Mini picks each next song at random from the three songs that sound most like the song before, and never plays a song twice until the next call."
     appfn:displayDescription="@string/app_functions_display_description" />

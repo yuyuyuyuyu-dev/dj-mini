@@ -12,7 +12,7 @@ import kotlin.math.sqrt
 class SimilarSongs(
     private val context: Context,
 ) {
-    suspend fun nearest(
+    suspend fun pickNext(
         songId: Long,
         excludedSongIds: Set<Long>,
     ): Song? {
@@ -27,7 +27,15 @@ class SimilarSongs(
                     .map { (id, _) -> id }
             }
         val library = MusicLibrary(context)
-        return withContext(Dispatchers.IO) { ranked.firstNotNullOfOrNull { library.findSong(it) } }
+        val candidates =
+            withContext(Dispatchers.IO) {
+                ranked
+                    .asSequence()
+                    .mapNotNull { library.findSong(it) }
+                    .take(CANDIDATES)
+                    .toList()
+            }
+        return candidates.randomOrNull()
     }
 
     private fun hasMusicAccess(): Boolean =
@@ -46,5 +54,9 @@ class SimilarSongs(
             normB += b[i] * b[i]
         }
         return if (normA == 0.0 || normB == 0.0) 0.0 else dot / sqrt(normA * normB)
+    }
+
+    private companion object {
+        const val CANDIDATES = 3
     }
 }

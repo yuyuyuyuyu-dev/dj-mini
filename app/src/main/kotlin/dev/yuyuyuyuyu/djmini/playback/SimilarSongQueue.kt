@@ -29,7 +29,7 @@ internal class SimilarSongQueue(
         search =
             scope.launch {
                 SongIndexWorker.update(context)
-                val next = SimilarSongs(context).nearest(mediaItem.songId, playedSongIds) ?: return@launch
+                val next = SimilarSongs(context).pickNext(mediaItem.songId, playedSongIds) ?: return@launch
                 if (player.currentMediaItem?.mediaId != mediaItem.mediaId || player.hasNextMediaItem()) return@launch
                 player.addMediaItem(next.toMediaItemContinuedBySimilarSongs())
                 if (player.playbackState == Player.STATE_ENDED) player.seekToNextMediaItem()

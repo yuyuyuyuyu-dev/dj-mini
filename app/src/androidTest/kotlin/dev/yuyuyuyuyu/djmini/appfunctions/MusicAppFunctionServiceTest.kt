@@ -83,31 +83,40 @@ class MusicAppFunctionServiceTest {
         }
 
     @Test
-    fun shouldPlayTheSongThatSoundsMostLikeTheFirstSongNext() =
+    fun shouldPlayOneOfTheThreeSongsThatSoundMostLikeTheFirstSongNext() =
         runBlocking {
             // Arrange
             val id = UUID.randomUUID()
-            val first = "DJ Mini Test Low Tone $id"
-            val similar = "DJ Mini Test High Tone $id"
-            val different = "DJ Mini Test Noise $id"
-            insertSong(different, noiseWav())
+            val first = "DJ Mini Test Tone $id"
+            insertSong("DJ Mini Test Noise $id", noiseWav())
             insertSong(first, toneWav(frequency = 440.0))
-            insertSong(similar, toneWav(frequency = 660.0))
+            val similar = insertSimilarTones(id)
 
             // Act
             executePlaySong(title = first)
 
             // Assert
-            withMediaController { controller ->
-                awaitMediaItemCount(controller, 2)
-                assertEquals(
-                    similar,
-                    controller
-                        .getMediaItemAt(1)
-                        .mediaMetadata.title
-                        .toString(),
-                )
-            }
+            assertTrue(nextSongTitle() in similar)
+        }
+
+    @Test
+    fun shouldNotAlwaysPlayTheSameSongNext() =
+        runBlocking {
+            // Arrange
+            val id = UUID.randomUUID()
+            val first = "DJ Mini Test Tone $id"
+            insertSong(first, toneWav(frequency = 440.0))
+            insertSimilarTones(id)
+
+            // Act
+            val nextTitles =
+                List(10) {
+                    executePlaySong(title = first)
+                    nextSongTitle().also { withMediaController { controller -> controller.stop() } }
+                }
+
+            // Assert
+            assertTrue(nextTitles.toSet().size > 1)
         }
 
     @Test
@@ -174,6 +183,20 @@ class MusicAppFunctionServiceTest {
                 .build()
         return manager.executeAppFunction(ExecuteAppFunctionRequest(context.packageName, metadata.id, parameters))
     }
+
+    private fun insertSimilarTones(id: UUID): List<String> =
+        listOf(445.0, 450.0, 455.0).map { frequency ->
+            "DJ Mini Test Tone $frequency Hz $id".also { insertSong(it, toneWav(frequency)) }
+        }
+
+    private suspend fun nextSongTitle(): String =
+        withMediaController { controller ->
+            awaitMediaItemCount(controller, 2)
+            controller
+                .getMediaItemAt(1)
+                .mediaMetadata.title
+                .toString()
+        }
 
     private suspend fun awaitMediaItemCount(
         controller: MediaController,

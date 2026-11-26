@@ -21,7 +21,8 @@ import kotlinx.coroutines.withContext
 )
 abstract class BaseMusicAppFunctionService : AppFunctionService() {
     /**
-     * Plays one song from the music files saved on this device, and stops when that song ends.
+     * Plays one song from the music files saved on this device, and then keeps playing songs on this device, each picked at
+     * random from the three that sound most like the song before, without playing any song twice.
      *
      * Matching is case-insensitive and accepts partial text. When several songs match, the song whose title is exactly the
      * given title is played; otherwise the first match in title order is played.
@@ -29,7 +30,7 @@ abstract class BaseMusicAppFunctionService : AppFunctionService() {
      * @param title Text in the title of the song to play, such as "Clair de Lune". Null to match any title.
      * @param artist Text in the name of the artist of the song to play, such as "Debussy". Null to match any artist.
      * @param album Text in the title of the album of the song to play. Null to match any album.
-     * @return The song that started playing.
+     * @return The song that started playing first.
      */
     @AppFunctionDeclaration(isDescribedByKDoc = true)
     suspend fun playSong(
@@ -38,7 +39,7 @@ abstract class BaseMusicAppFunctionService : AppFunctionService() {
         album: String? = null,
     ): PlayedSong {
         val song = findSong(title?.trim()?.ifEmpty { null }, artist?.trim()?.ifEmpty { null }, album?.trim()?.ifEmpty { null })
-        MusicPlayer(this).play(song)
+        MusicPlayer(this).playAndContinueWithSimilarSongs(song)
         return song.toPlayedSong()
     }
 

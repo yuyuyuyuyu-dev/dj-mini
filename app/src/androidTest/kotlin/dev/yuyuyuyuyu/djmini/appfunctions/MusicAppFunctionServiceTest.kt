@@ -27,6 +27,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -35,6 +36,10 @@ import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.UUID
+import kotlin.math.PI
+import kotlin.math.sin
+import kotlin.random.Random
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 @RunWith(AndroidJUnit4::class)
@@ -78,6 +83,71 @@ class MusicAppFunctionServiceTest {
         }
 
     @Test
+    fun shouldPlayOneOfTheThreeSongsThatSoundMostLikeTheFirstSongNext() =
+        runBlocking {
+            // Arrange
+            val id = UUID.randomUUID()
+            val first = "DJ Mini Test Tone $id"
+            insertSong("DJ Mini Test Noise $id", noiseWav())
+            insertSong(first, toneWav(frequency = 440.0))
+            val similar = insertSimilarTones(id)
+
+            // Act
+            executePlaySong(title = first)
+
+            // Assert
+            assertTrue(nextSongTitle() in similar)
+        }
+
+    @Test
+    fun shouldNotAlwaysPlayTheSameSongNext() =
+        runBlocking {
+            // Arrange
+            val id = UUID.randomUUID()
+            val first = "DJ Mini Test Tone $id"
+            insertSong(first, toneWav(frequency = 440.0))
+            insertSimilarTones(id)
+
+            // Act
+            val nextTitles =
+                List(10) {
+                    executePlaySong(title = first)
+                    nextSongTitle().also { withMediaController { controller -> controller.stop() } }
+                }
+
+            // Assert
+            assertTrue(nextTitles.toSet().size > 1)
+        }
+
+    @Test
+    fun shouldNotPlayASongThatAlreadyPlayed() =
+        runBlocking {
+            // Arrange
+            val id = UUID.randomUUID()
+            val first = "DJ Mini Test Low Tone $id"
+            insertSong("DJ Mini Test Noise $id", noiseWav())
+            insertSong(first, toneWav(frequency = 440.0))
+            insertSong("DJ Mini Test High Tone $id", toneWav(frequency = 660.0))
+            executePlaySong(title = first)
+            withMediaController { awaitMediaItemCount(it, 2) }
+
+            // Act
+            withMediaController { it.seekToNextMediaItem() }
+
+            // Assert
+            withMediaController { controller ->
+                awaitMediaItemCount(controller, 3)
+                assertNotEquals(
+                    first,
+                    controller
+                        .getMediaItemAt(2)
+                        .mediaMetadata.title
+                        .toString(),
+                )
+            }
+        }
+
+    @Test
     fun shouldFailWhenNoSongMatches() =
         runBlocking {
             // Arrange
@@ -114,7 +184,33 @@ class MusicAppFunctionServiceTest {
         return manager.executeAppFunction(ExecuteAppFunctionRequest(context.packageName, metadata.id, parameters))
     }
 
-    private fun insertSong(title: String) {
+    private fun insertSimilarTones(id: UUID): List<String> =
+        listOf(445.0, 450.0, 455.0).map { frequency ->
+            "DJ Mini Test Tone $frequency Hz $id".also { insertSong(it, toneWav(frequency)) }
+        }
+
+    private suspend fun nextSongTitle(): String =
+        withMediaController { controller ->
+            awaitMediaItemCount(controller, 2)
+            controller
+                .getMediaItemAt(1)
+                .mediaMetadata.title
+                .toString()
+        }
+
+    private suspend fun awaitMediaItemCount(
+        controller: MediaController,
+        count: Int,
+    ) {
+        withTimeout(2.minutes) {
+            while (controller.mediaItemCount < count) delay(100)
+        }
+    }
+
+    private fun insertSong(
+        title: String,
+        wav: ByteArray = silentWav(seconds = 30),
+    ) {
         val resolver = context.contentResolver
         val values =
             ContentValues().apply {
@@ -125,7 +221,7 @@ class MusicAppFunctionServiceTest {
             }
         val uri = resolver.insert(MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY), values)!!
         insertedSongs += uri
-        resolver.openOutputStream(uri)!!.use { it.write(silentWav(seconds = 30)) }
+        resolver.openOutputStream(uri)!!.use { it.write(wav) }
         resolver.update(uri, ContentValues().apply { put(MediaStore.Audio.Media.IS_PENDING, 0) }, null, null)
     }
 
@@ -157,6 +253,38 @@ class MusicAppFunctionServiceTest {
             }.toByteArray()
     }
 
+    private fun toneWav(frequency: Double): ByteArray =
+        wav16Bit(FloatArray(SAMPLE_RATE * SECONDS) { (sin(2 * PI * frequency * it / SAMPLE_RATE) * 0.5).toFloat() })
+
+    private fun noiseWav(): ByteArray {
+        val random = Random(0)
+        return wav16Bit(FloatArray(SAMPLE_RATE * SECONDS) { random.nextFloat() - 0.5f })
+    }
+
+    private fun wav16Bit(samples: FloatArray): ByteArray {
+        val data = ByteBuffer.allocate(samples.size * 2).order(ByteOrder.LITTLE_ENDIAN)
+        samples.forEach { data.putShort((it * Short.MAX_VALUE).toInt().toShort()) }
+        val header =
+            ByteBuffer
+                .allocate(44)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .put("RIFF".toByteArray())
+                .putInt(36 + data.capacity())
+                .put("WAVE".toByteArray())
+                .put("fmt ".toByteArray())
+                .putInt(16)
+                .putShort(1)
+                .putShort(1)
+                .putInt(SAMPLE_RATE)
+                .putInt(SAMPLE_RATE * 2)
+                .putShort(2)
+                .putShort(16)
+                .put("data".toByteArray())
+                .putInt(data.capacity())
+                .array()
+        return header + data.array()
+    }
+
     private suspend fun <T> withMediaController(block: suspend (MediaController) -> T): T =
         withContext(Dispatchers.Main) {
             val token = SessionToken(context, ComponentName(context, PlaybackService::class.java))
@@ -167,4 +295,9 @@ class MusicAppFunctionServiceTest {
                 controller.release()
             }
         }
+
+    private companion object {
+        const val SAMPLE_RATE = 16_000
+        const val SECONDS = 10
+    }
 }

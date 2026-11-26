@@ -21,23 +21,37 @@ class MusicLibrary(
                 album?.let { Media.ALBUM to it },
             )
         val selection =
-            (listOf("${Media.IS_MUSIC} != 0") + filters.map { (column, _) -> "$column LIKE ? ESCAPE '\\'" })
+            (listOf(IS_MUSIC) + filters.map { (column, _) -> "$column LIKE ? ESCAPE '\\'" })
                 .joinToString(" AND ")
         val selectionArgs = filters.map { (_, value) -> "%${value.escapeForLike()}%" }.toTypedArray()
 
-        val songs =
-            context.contentResolver
-                .query(
-                    Media.EXTERNAL_CONTENT_URI,
-                    arrayOf(Media._ID, Media.TITLE, Media.ARTIST, Media.ALBUM),
-                    selection,
-                    selectionArgs,
-                    "${Media.TITLE} COLLATE NOCASE ASC",
-                )?.use { it.toSongs() }
-                .orEmpty()
+        val songs = querySongs(selection, selectionArgs, "${Media.TITLE} COLLATE NOCASE ASC")
 
         return songs.firstOrNull { title != null && it.title.equals(title, ignoreCase = true) } ?: songs.firstOrNull()
     }
+
+    fun findSong(id: Long): Song? = querySongs("$IS_MUSIC AND ${Media._ID} = ?", arrayOf(id.toString()), null).firstOrNull()
+
+    fun songFiles(): List<SongFile> =
+        context.contentResolver
+            .query(Media.EXTERNAL_CONTENT_URI, arrayOf(Media._ID, Media.DATE_MODIFIED), IS_MUSIC, null, null)
+            ?.use { it.toSongFiles() }
+            .orEmpty()
+
+    private fun querySongs(
+        selection: String,
+        selectionArgs: Array<String>,
+        sortOrder: String?,
+    ): List<Song> =
+        context.contentResolver
+            .query(
+                Media.EXTERNAL_CONTENT_URI,
+                arrayOf(Media._ID, Media.TITLE, Media.ARTIST, Media.ALBUM),
+                selection,
+                selectionArgs,
+                sortOrder,
+            )?.use { it.toSongs() }
+            .orEmpty()
 
     private fun Cursor.toSongs(): List<Song> {
         val idColumn = getColumnIndexOrThrow(Media._ID)
@@ -46,14 +60,27 @@ class MusicLibrary(
         val albumColumn = getColumnIndexOrThrow(Media.ALBUM)
         return buildList {
             while (moveToNext()) {
+                val id = getLong(idColumn)
                 add(
                     Song(
-                        uri = ContentUris.withAppendedId(Media.EXTERNAL_CONTENT_URI, getLong(idColumn)),
+                        id = id,
+                        uri = ContentUris.withAppendedId(Media.EXTERNAL_CONTENT_URI, id),
                         title = getString(titleColumn),
                         artist = getString(artistColumn).knownOrNull(),
                         album = getString(albumColumn).knownOrNull(),
                     ),
                 )
+            }
+        }
+    }
+
+    private fun Cursor.toSongFiles(): List<SongFile> {
+        val idColumn = getColumnIndexOrThrow(Media._ID)
+        val modifiedColumn = getColumnIndexOrThrow(Media.DATE_MODIFIED)
+        return buildList {
+            while (moveToNext()) {
+                val id = getLong(idColumn)
+                add(SongFile(id, ContentUris.withAppendedId(Media.EXTERNAL_CONTENT_URI, id), getLong(modifiedColumn)))
             }
         }
     }
@@ -64,4 +91,8 @@ class MusicLibrary(
             .replace("_", "\\_")
 
     private fun String?.knownOrNull(): String? = takeUnless { it.isNullOrBlank() || it == MediaStore.UNKNOWN_STRING }
+
+    private companion object {
+        const val IS_MUSIC = "${Media.IS_MUSIC} != 0"
+    }
 }

@@ -1,5 +1,5 @@
 [versions]
-androidGradlePlugin = "9.5.2"
+androidGradlePlugin = "9.5.3"
 androidxActivity = "1.13.0"
 androidxAppfunctions = "1.0.0"
 androidxComposeBom = "2026.11.01"

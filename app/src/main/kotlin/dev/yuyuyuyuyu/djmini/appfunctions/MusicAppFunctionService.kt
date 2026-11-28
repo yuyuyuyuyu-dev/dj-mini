@@ -9,6 +9,7 @@ import androidx.appfunctions.AppFunctionPermissionRequiredException
 import androidx.appfunctions.AppFunctionSerializable
 import androidx.appfunctions.AppFunctionService
 import androidx.appfunctions.AppFunctionServiceEntryPoint
+import dev.yuyuyuyuyu.djmini.music.Album
 import dev.yuyuyuyuyu.djmini.music.MusicLibrary
 import dev.yuyuyuyuyu.djmini.music.MusicPlayer
 import dev.yuyuyuyuyu.djmini.music.Song
@@ -27,6 +28,8 @@ abstract class BaseMusicAppFunctionService : AppFunctionService() {
      * Matching is case-insensitive and accepts partial text. When several songs match, the song whose title is exactly the
      * given title is played; otherwise the first match in title order is played.
      *
+     * To play a whole album, use playAlbum instead.
+     *
      * @param title Text in the title of the song to play, such as "Clair de Lune". Null to match any title.
      * @param artist Text in the name of the artist of the song to play, such as "Debussy". Null to match any artist.
      * @param album Text in the title of the album of the song to play. Null to match any album.
@@ -41,6 +44,36 @@ abstract class BaseMusicAppFunctionService : AppFunctionService() {
         val song = findSong(title?.trim()?.ifEmpty { null }, artist?.trim()?.ifEmpty { null }, album?.trim()?.ifEmpty { null })
         MusicPlayer(this).playAndContinueWithSimilarSongs(song)
         return song.toPlayedSong()
+    }
+
+    /**
+     * Plays every song of one album saved on this device in track order, and stops after the last song of the album.
+     *
+     * Matching is case-insensitive and accepts partial text. When several albums match, the album whose title is exactly the
+     * given title is played; otherwise the first match in title order is played.
+     *
+     * @param album Text in the title of the album to play, such as "Abbey Road".
+     * @param artist Text in the name of the artist of the album to play, such as "The Beatles". Null to match any artist.
+     * @return The album that started playing.
+     */
+    @AppFunctionDeclaration(isDescribedByKDoc = true)
+    suspend fun playAlbum(
+        album: String,
+        artist: String? = null,
+    ): PlayedAlbum {
+        val found = findAlbum(album.trim(), artist?.trim()?.ifEmpty { null })
+        MusicPlayer(this).playToTheEnd(found)
+        return PlayedAlbum(title = found.title, artist = found.artist, songs = found.songs.map { it.toPlayedSong() })
+    }
+
+    private suspend fun findAlbum(
+        title: String,
+        artist: String?,
+    ): Album {
+        if (title.isEmpty()) throw AppFunctionInvalidArgumentException("Give the title of the album.")
+        requireMusicAccess()
+        return withContext(Dispatchers.IO) { MusicLibrary(this@BaseMusicAppFunctionService).findAlbum(title, artist) }
+            ?: throw AppFunctionElementNotFoundException("No album on this device matches the given title and artist.")
     }
 
     private suspend fun findSong(
@@ -76,4 +109,15 @@ data class PlayedSong(
     val artist: String?,
     /** The title of the album, or null when the music file does not name one. */
     val album: String?,
+)
+
+/** An album that DJ Mini started playing. */
+@AppFunctionSerializable(isDescribedByKDoc = true)
+data class PlayedAlbum(
+    /** The title of the album. */
+    val title: String,
+    /** The name of the artist of the album, or null when the music files do not name one artist. */
+    val artist: String?,
+    /** The songs of the album in the order they play. */
+    val songs: List<PlayedSong>,
 )

@@ -21,13 +21,50 @@ class MusicLibrary(
                 album?.let { Media.ALBUM to it },
             )
         val selection =
-            (listOf(IS_MUSIC) + filters.map { (column, _) -> "$column LIKE ? ESCAPE '\\'" })
+            (listOf(IS_MUSIC) + filters.map { (column, _) -> "$column $LIKE" })
                 .joinToString(" AND ")
         val selectionArgs = filters.map { (_, value) -> "%${value.escapeForLike()}%" }.toTypedArray()
 
         val songs = querySongs(selection, selectionArgs, "${Media.TITLE} COLLATE NOCASE ASC")
 
         return songs.firstOrNull { title != null && it.title.equals(title, ignoreCase = true) } ?: songs.firstOrNull()
+    }
+
+    fun findAlbum(
+        title: String,
+        artist: String?,
+    ): Album? {
+        val selection =
+            listOfNotNull(
+                IS_MUSIC,
+                "${Media.ALBUM} $LIKE",
+                artist?.let { "(${Media.ARTIST} $LIKE OR ${Media.ALBUM_ARTIST} $LIKE)" },
+            ).joinToString(" AND ")
+        val selectionArgs = (listOf(title) + listOfNotNull(artist, artist)).map { "%${it.escapeForLike()}%" }.toTypedArray()
+
+        val albums =
+            context.contentResolver
+                .query(
+                    Media.EXTERNAL_CONTENT_URI,
+                    arrayOf(Media.ALBUM_ID, Media.ALBUM, Media.ALBUM_ARTIST),
+                    selection,
+                    selectionArgs,
+                    "${Media.ALBUM} COLLATE NOCASE ASC",
+                )?.use { it.toAlbumRows() }
+                .orEmpty()
+        val album = albums.firstOrNull { it.title.equals(title, ignoreCase = true) } ?: albums.firstOrNull() ?: return null
+
+        val songs =
+            querySongs(
+                "$IS_MUSIC AND ${Media.ALBUM_ID} = ?",
+                arrayOf(album.id.toString()),
+                "${Media.TRACK} ASC, ${Media.TITLE} COLLATE NOCASE ASC",
+            )
+        return Album(
+            title = album.title,
+            artist = album.artist ?: songs.mapNotNull { it.artist }.distinct().singleOrNull(),
+            songs = songs,
+        )
     }
 
     fun findSong(id: Long): Song? = querySongs("$IS_MUSIC AND ${Media._ID} = ?", arrayOf(id.toString()), null).firstOrNull()
@@ -74,6 +111,18 @@ class MusicLibrary(
         }
     }
 
+    private fun Cursor.toAlbumRows(): List<AlbumRow> {
+        val idColumn = getColumnIndexOrThrow(Media.ALBUM_ID)
+        val titleColumn = getColumnIndexOrThrow(Media.ALBUM)
+        val artistColumn = getColumnIndexOrThrow(Media.ALBUM_ARTIST)
+        return buildList {
+            while (moveToNext()) {
+                val title = getString(titleColumn).knownOrNull() ?: continue
+                add(AlbumRow(getLong(idColumn), title, getString(artistColumn).knownOrNull()))
+            }
+        }
+    }
+
     private fun Cursor.toSongFiles(): List<SongFile> {
         val idColumn = getColumnIndexOrThrow(Media._ID)
         val modifiedColumn = getColumnIndexOrThrow(Media.DATE_MODIFIED)
@@ -92,7 +141,14 @@ class MusicLibrary(
 
     private fun String?.knownOrNull(): String? = takeUnless { it.isNullOrBlank() || it == MediaStore.UNKNOWN_STRING }
 
+    private data class AlbumRow(
+        val id: Long,
+        val title: String,
+        val artist: String?,
+    )
+
     private companion object {
         const val IS_MUSIC = "${Media.IS_MUSIC} != 0"
+        const val LIKE = "LIKE ? ESCAPE '\\'"
     }
 }

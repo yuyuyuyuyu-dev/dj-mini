@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AppFunctionAppMetadata xmlns:appfn="http://schemas.android.com/apk/androidx.appfunctions"
-    appfn:instructions="DJ Mini plays music files saved on this device. Its function plays one song that matches a title, an artist, or an album, and then keeps playing songs that sound like it.
+    appfn:instructions="DJ Mini plays music files saved on this device. playSong plays one song that matches a title, an artist, or an album, and then keeps playing songs that sound like it. playAlbum plays every song of one album in track order.
     Constraints:
     - Only music files saved on this device can be played; streaming services are not available.
-    - One call starts one song; after it, DJ Mini picks each next song at random from the three songs that sound most like the song before, and never plays a song twice until the next call."
+    - playSong starts one song; after it, DJ Mini picks each next song at random from the three songs that sound most like the song before, and never plays a song twice until the next call.
+    - playAlbum stops after the last song of the album; it does not go on to other songs."
     appfn:displayDescription="@string/app_functions_display_description" />

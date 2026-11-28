@@ -8,7 +8,18 @@ import androidx.media3.common.MediaMetadata
 
 private const val CONTINUES_WITH_SIMILAR_SONGS = "dev.yuyuyuyuyu.djmini.CONTINUES_WITH_SIMILAR_SONGS"
 
+fun Song.toMediaItem(): MediaItem = mediaItemBuilder().build()
+
 fun Song.toMediaItemContinuedBySimilarSongs(): MediaItem =
+    mediaItemBuilder()
+        .setRequestMetadata(
+            MediaItem.RequestMetadata
+                .Builder()
+                .setExtras(Bundle().apply { putBoolean(CONTINUES_WITH_SIMILAR_SONGS, true) })
+                .build(),
+        ).build()
+
+private fun Song.mediaItemBuilder(): MediaItem.Builder =
     MediaItem
         .Builder()
         .setMediaId(uri.toString())
@@ -20,12 +31,7 @@ fun Song.toMediaItemContinuedBySimilarSongs(): MediaItem =
                 .setArtist(artist)
                 .setAlbumTitle(album)
                 .build(),
-        ).setRequestMetadata(
-            MediaItem.RequestMetadata
-                .Builder()
-                .setExtras(Bundle().apply { putBoolean(CONTINUES_WITH_SIMILAR_SONGS, true) })
-                .build(),
-        ).build()
+        )
 
 val MediaItem.songId: Long
     get() = ContentUris.parseId(mediaId.toUri())
